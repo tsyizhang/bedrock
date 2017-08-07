@@ -8,6 +8,10 @@ $(function() {
 
     var client = window.Mozilla.Client;
 
+    var _clickCallback = function() {
+        Mozilla.Modal.createModal(this, $('.update-notification-modal-instructions'));
+    };
+
     var options = [
         {
             'id': 'fx-out-of-date-banner-copy1-direct-1',
@@ -19,9 +23,10 @@ $(function() {
             'confirm': 'Update now',
             'confirmAction': 'Update Firefox',
             'confirmLabel': 'Firefox for Desktop',
+            'confirmClick': _clickCallback,
             'url': '/firefox/new/?scene=2',
             'close': 'Close',
-            'closeLabel': 'Close'
+            'closeLabel': 'Close',
         },
         {
             'id': 'fx-out-of-date-banner-copy1-direct-2',
@@ -33,6 +38,7 @@ $(function() {
             'confirm': 'Update Firefox',
             'confirmAction': 'Update Firefox',
             'confirmLabel': 'Firefox for Desktop',
+            'confirmClick': _clickCallback,
             'url': '/firefox/new/?scene=2',
             'close': 'Close',
             'closeLabel': 'Close'
@@ -47,6 +53,7 @@ $(function() {
             'confirm': 'Update Firefox',
             'confirmAction': 'Update Firefox',
             'confirmLabel': 'Firefox for Desktop',
+            'confirmClick': _clickCallback,
             'url': '/firefox/new/?scene=2',
             'close': 'Close',
             'closeLabel': 'Close'
@@ -61,28 +68,43 @@ $(function() {
             'confirm': 'Update now',
             'confirmAction': 'Update Firefox',
             'confirmLabel': 'Firefox for Desktop',
+            'confirmClick': _clickCallback,
             'url': '/firefox/new/?scene=2',
             'close': 'Close',
             'closeLabel': 'Close'
         }
     ];
 
+    /**
+     * Determine if Firefox cliient is out of date.
+     * @return {Boolean} - Returns true if client is at least 2 major versions out of date.
+     */
+    var _isClientOutOfDate = function() {
+        var clientVersion = client._getFirefoxMajorVersion();
+        var latestVersion = parseInt($('html').attr('data-latest-firefox'), 10);
+
+        if (!latestVersion || !clientVersion) {
+            return false;
+        }
+
+        return clientVersion < latestVersion - 1;
+    };
+
     // Set a unique cookie ID for fx-out-of-date notification.
     Mozilla.NotificationBanner.COOKIE_CODE_ID = 'moz-notification-fx-out-of-date';
 
-    // Notification should only be shown to users on Firefox for desktop.
-    if (client.isFirefoxDesktop) {
+    // Notification should only be shown to Firefox desktop users more than 2 major versions out of date.
+    if (client.isFirefoxDesktop && _isClientOutOfDate) {
         client.getFirefoxDetails(function(details) {
-            // User must be out of date and on release channel.
-            if (!details.isUpToDate && details.channel === 'release') {
 
-                // Check that cookies are enabled before seeing if one already exists.
-                if (typeof Mozilla.Cookies !== 'undefined' && Mozilla.Cookies.enabled()) {
-                    var choice = Mozilla.NotificationBanner.getOptions(options);
+            // User must be on release channel and have cookies enabled.
+            if (details.channel === 'release' && typeof Mozilla.Cookies !== 'undefined' && Mozilla.Cookies.enabled()) {
 
-                    if (choice) {
-                        Mozilla.NotificationBanner.init(choice);
-                    }
+                // select a notification config using rate limiting (defaults to 5%).
+                var choice = Mozilla.NotificationBanner.getOptions(options, true);
+
+                if (choice) {
+                    Mozilla.NotificationBanner.init(choice);
                 }
             }
         });
