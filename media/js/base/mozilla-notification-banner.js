@@ -12,11 +12,11 @@ if (typeof Mozilla === 'undefined') {
 
     var NotificationBanner = {};
     var _options = {};
+    var _sampleRate = 0;
 
     NotificationBanner.COOKIE_CODE_ID = 'mozilla-notification-banner';
     NotificationBanner.COOKIE_EXPIRATION_DAYS = 21; // default cookie expiry 21 days
     NotificationBanner.COOKIE_INTERACTION_VALUE = 'interacted';
-    NotificationBanner.SAMPLE_RATE = 0.05; // 5% sample rate limit
 
     /**
      * Gets notification cookie if it exists.
@@ -229,18 +229,49 @@ if (typeof Mozilla === 'undefined') {
         return true;
     };
 
+    /**
+     * Convenience method for testing purposes.
+     */
+    NotificationBanner.getSampleRate = function() {
+        return _sampleRate;
+    };
+
+    /**
+     * Sets an optional sample rate limit for selecting a notification config.
+     * @param {Number} rate - value must be between 0 and 1.
+     */
+    NotificationBanner.setSampleRate = function(rate) {
+        // isNaN tries to coerce values to a Number before comparing
+        // so we need to special case booleans and falsy values :/
+        if (!rate || typeof rate === 'boolean') {
+            _sampleRate = 0;
+            return;
+        }
+
+        _sampleRate = isNaN(rate) ? 0 : Math.min(Math.max(parseFloat(rate), 0), 1);
+    };
+
+    /**
+     * Determines if user falls within sample rate limit to see a notification.
+     * If a sample rate is not set function will return true.
+     * @return {Boolean}
+     */
     NotificationBanner.withinSampleRate = function() {
-        return (Math.random() < NotificationBanner.SAMPLE_RATE) ? true : false;
+        // if there's no sample rate set, return true.
+        if (!_sampleRate) {
+            return true;
+        }
+        return (Math.random() <= _sampleRate) ? true : false;
     };
 
     /**
      * Selects a messaging option to use for the notification.
-     * Value returned is dependant on if a cookie already exists or the visitor falls within a predefined sample rate limit.
+     * Value returned can be dependant on if a cookie already exists or the visitor falls within an optional
+     * sample rate limit, else a config will be selected at random.
      * @param {Array} options - array of object literals with the same format defined for init()
-     * @param {Boolean} limit (optional) rate limit option choice.
      * @return {Object} object literal or null if option is not found or out of sample rate.
      */
-    NotificationBanner.getOptions = function(options, limit) {
+    NotificationBanner.getOptions = function(options) {
         var cookie = NotificationBanner.getCookie();
         var choice = Math.floor(Math.random() * options.length); // choose one of (n) possible variations.
         var result = null;
@@ -253,13 +284,8 @@ if (typeof Mozilla === 'undefined') {
                     break;
                 }
             }
-        // else if we are rate limiting, roll the dice to see if we should select a new config.
-        } else if (limit) {
-            if (NotificationBanner.withinSampleRate()) {
-                result = options[choice];
-            }
-        // else randonly choose a config to select.
-        } else {
+        // else return a randomly selected config.
+        } else if (NotificationBanner.withinSampleRate()) {
             result = options[choice];
         }
 

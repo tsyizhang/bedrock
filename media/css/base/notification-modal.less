@@ -5,15 +5,16 @@
 @import "../sandstone/lib.less";
 
 /* -------------------------------------------------------------------------- */
-// Firefox Update Notification Modal
+// Notification modal container styles
 
-.update-notification-modal-instructions {
+.notification-modal-content {
     display: none;
     margin-top: 20px;
     padding: 40px 20px;
 
     h2,
     h3 {
+        color: #000;
         font-weight: bold;
         line-height: 1.3;
         margin: 0 0 12px 0;
@@ -52,10 +53,6 @@
         text-decoration: underline;
     }
 
-    ol.mac {
-        display: none;
-    }
-
     @media only screen and (max-width: @breakDesktop) {
         h2 {
             .font-size(24px);
@@ -67,19 +64,8 @@
     }
 }
 
-// Conditionally show update steps for macOS which are slightly different to Windows/Linux.
-.osx .update-notification-modal-instructions {
-    ol.win-lin {
-        display: none;
-    }
-
-    ol.mac {
-        display: block;
-    }
-}
-
 .js #modal {
-    .update-notification-modal-instructions {
+    .notification-modal-content {
         display: block;
     }
 
@@ -94,5 +80,22 @@
 
     header {
         .visually-hidden;
+    }
+}
+
+// For Firefox update notification show platform specific instructions for Winodws/Mac/Linux.
+.notification-modal-content {
+    ol.mac {
+        display: none;
+    }
+}
+
+.osx .notification-modal-content {
+    ol.win-lin {
+        display: none;
+    }
+
+    ol.mac {
+        display: block;
     }
 }

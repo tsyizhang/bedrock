@@ -9,7 +9,7 @@ $(function() {
     var client = window.Mozilla.Client;
 
     var _clickCallback = function() {
-        Mozilla.Modal.createModal(this, $('.update-notification-modal-instructions'));
+        Mozilla.Modal.createModal(this, $('.notification-modal-content'));
     };
 
     var options = [
@@ -26,7 +26,7 @@ $(function() {
             'confirmClick': _clickCallback,
             'url': '/firefox/new/?scene=2',
             'close': 'Close',
-            'closeLabel': 'Close',
+            'closeLabel': 'Close'
         },
         {
             'id': 'fx-out-of-date-banner-copy1-direct-2',
@@ -80,7 +80,7 @@ $(function() {
      * @return {Boolean} - Returns true if client is at least 2 major versions out of date.
      */
     var _isClientOutOfDate = function() {
-        var clientVersion = client._getFirefoxMajorVersion();
+        var clientVersion = client.FirefoxMajorVersion;
         var latestVersion = parseInt($('html').attr('data-latest-firefox'), 10);
 
         if (!latestVersion || !clientVersion) {
@@ -93,15 +93,17 @@ $(function() {
     // Set a unique cookie ID for fx-out-of-date notification.
     Mozilla.NotificationBanner.COOKIE_CODE_ID = 'moz-notification-fx-out-of-date';
 
+    // Rate limit notification to 5%;
+    Mozilla.NotificationBanner.setSampleRate(0.05);
+
     // Notification should only be shown to Firefox desktop users more than 2 major versions out of date.
-    if (client.isFirefoxDesktop && _isClientOutOfDate) {
+    if (client.isFirefoxDesktop && _isClientOutOfDate()) {
         client.getFirefoxDetails(function(details) {
 
             // User must be on release channel and have cookies enabled.
             if (details.channel === 'release' && typeof Mozilla.Cookies !== 'undefined' && Mozilla.Cookies.enabled()) {
 
-                // select a notification config using rate limiting (defaults to 5%).
-                var choice = Mozilla.NotificationBanner.getOptions(options, true);
+                var choice = Mozilla.NotificationBanner.getOptions(options);
 
                 if (choice) {
                     Mozilla.NotificationBanner.init(choice);

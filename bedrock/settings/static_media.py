@@ -674,6 +674,13 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'css/firefox_tour_none-bundle.css',
     },
+    'firefox-update-notification-modal': {
+        'source_filenames': (
+            'css/base/mozilla-modal.less',
+            'css/base/notification-modal.less',
+        ),
+        'output_filename': 'css/firefox-update-notification-modal-bundle.css',
+    },
     'firefox_whatsnew_42': {
         'source_filenames': (
             'css/firefox/tracking-protection-animation.less',
@@ -961,13 +968,6 @@ PIPELINE_CSS = {
             'css/firefox/tracking-protection-tour.less',
         ),
         'output_filename': 'css/tracking-protection-tour-bundle.css',
-    },
-    'update-notification-modal': {
-        'source_filenames': (
-            'css/base/mozilla-modal.less',
-            'css/base/update-notification-modal.less',
-        ),
-        'output_filename': 'css/update-notification-modal-bundle.css',
     },
     'contribute-base': {
         'source_filenames': (

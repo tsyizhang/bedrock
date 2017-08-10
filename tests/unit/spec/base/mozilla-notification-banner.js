@@ -393,7 +393,57 @@ describe('mozilla-notification-banner.js', function() {
         });
     });
 
+    describe('setSampleRate', function() {
+
+        afterEach(function() {
+            Mozilla.NotificationBanner.setSampleRate(0);
+        });
+
+        it('should set the sample rate as expected', function() {
+            Mozilla.NotificationBanner.setSampleRate(0.05);
+            var result = Mozilla.NotificationBanner.getSampleRate();
+            expect(result).toEqual(0.05);
+        });
+
+        it('should not set values less than 0 or exceeding 1', function() {
+            Mozilla.NotificationBanner.setSampleRate(-1);
+            var result = Mozilla.NotificationBanner.getSampleRate();
+            expect(result).toEqual(0);
+
+            Mozilla.NotificationBanner.setSampleRate(2);
+            var result2 = Mozilla.NotificationBanner.getSampleRate();
+            expect(result2).toEqual(1);
+        });
+
+        it('should not set invalid types', function() {
+            Mozilla.NotificationBanner.setSampleRate(null);
+            var result = Mozilla.NotificationBanner.getSampleRate();
+            expect(result).toEqual(0);
+
+            Mozilla.NotificationBanner.setSampleRate('foo');
+            var result2 = Mozilla.NotificationBanner.getSampleRate();
+            expect(result2).toEqual(0);
+
+            Mozilla.NotificationBanner.setSampleRate(true);
+            var result3 = Mozilla.NotificationBanner.getSampleRate();
+            expect(result3).toEqual(0);
+
+            Mozilla.NotificationBanner.setSampleRate('');
+            var result4 = Mozilla.NotificationBanner.getSampleRate();
+            expect(result4).toEqual(0);
+        });
+    });
+
     describe('withinSampleRate', function() {
+
+        beforeEach(function() {
+            Mozilla.NotificationBanner.setSampleRate(0.05);
+        });
+
+        afterEach(function() {
+            Mozilla.NotificationBanner.setSampleRate(0);
+        });
+
         it('should return true if within rate limit', function() {
             spyOn(Math, 'random').and.returnValue(0.04);
             var result = Mozilla.NotificationBanner.withinSampleRate();
@@ -404,6 +454,16 @@ describe('mozilla-notification-banner.js', function() {
             spyOn(Math, 'random').and.returnValue(0.06);
             var result = Mozilla.NotificationBanner.withinSampleRate();
             expect(result).toBeFalsy();
+        });
+
+        it('should return true if sample rate is not set', function() {
+            Mozilla.NotificationBanner.setSampleRate(0);
+            var result = Mozilla.NotificationBanner.withinSampleRate();
+            expect(result).toBeTruthy();
+
+            Mozilla.NotificationBanner.setSampleRate(null);
+            var result1 = Mozilla.NotificationBanner.withinSampleRate();
+            expect(result1).toBeTruthy();
         });
     });
 
